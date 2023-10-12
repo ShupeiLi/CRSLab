@@ -167,10 +167,7 @@ class TGReDialSystem(BaseSystem):
 
     def train_recommender(self):
         if hasattr(self.rec_model, 'bert'):
-            if os.environ["CUDA_VISIBLE_DEVICES"] == '-1':
-                bert_param = list(self.rec_model.bert.named_parameters())
-            else:
-                bert_param = list(self.rec_model.module.bert.named_parameters())
+            bert_param = list(self.rec_model.bert.named_parameters())
             bert_param_name = ['bert.' + n for n, p in bert_param]
         else:
             bert_param = []
@@ -191,6 +188,7 @@ class TGReDialSystem(BaseSystem):
                 self.step(batch, stage='rec', mode='train')
             self.evaluator.report(epoch=epoch, mode='train')
             # val
+            logger.info('[Valid]')
             with torch.no_grad():
                 self.evaluator.reset_metrics()
                 for batch in self.valid_dataloader['rec'].get_rec_data(
@@ -202,6 +200,7 @@ class TGReDialSystem(BaseSystem):
                 if self.early_stop(metric):
                     break
         # test
+        logger.info('[Test]')
         with torch.no_grad():
             self.evaluator.reset_metrics()
             for batch in self.test_dataloader['rec'].get_rec_data(self.rec_batch_size,
@@ -220,6 +219,7 @@ class TGReDialSystem(BaseSystem):
                 self.step(batch, stage='conv', mode='train')
             self.evaluator.report(epoch=epoch, mode='train')
             # val
+            logger.info('[Valid]')
             with torch.no_grad():
                 self.evaluator.reset_metrics()
                 for batch in self.valid_dataloader['conv'].get_conv_data(
@@ -231,6 +231,7 @@ class TGReDialSystem(BaseSystem):
                 if self.early_stop(metric):
                     break
         # test
+        logger.info('[Test]')
         with torch.no_grad():
             self.evaluator.reset_metrics()
             for batch in self.test_dataloader['conv'].get_conv_data(
@@ -265,6 +266,7 @@ class TGReDialSystem(BaseSystem):
                 self.step(batch, stage='policy', mode='train')
             self.evaluator.report(epoch=epoch, mode='train')
             # val
+            logger.info('[Valid]')
             with torch.no_grad():
                 self.evaluator.reset_metrics()
                 for batch in self.valid_dataloader['policy'].get_policy_data(
@@ -276,6 +278,7 @@ class TGReDialSystem(BaseSystem):
                 if self.early_stop(metric):
                     break
         # test
+        logger.info('[Test]')
         with torch.no_grad():
             self.evaluator.reset_metrics()
             for batch in self.test_dataloader['policy'].get_policy_data(
