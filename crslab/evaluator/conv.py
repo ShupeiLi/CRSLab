@@ -76,6 +76,7 @@ class ConvEvaluator(BaseEvaluator):
             self.gen_metrics.add('extreme', VectorExtrema.compute(hyp_emb, ref_embs))
 
     def report(self, epoch=-1, mode='test'):
+        # Calculate the system-level distinct-n value
         for k, v in self.dist_set.items():
             self.gen_metrics.add(k, AverageMetric(len(v) / self.dist_cnt))
         reports = [self.gen_metrics.report(), self.optim_metrics.report()]

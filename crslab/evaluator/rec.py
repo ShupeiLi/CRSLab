@@ -35,7 +35,7 @@ class RecEvaluator(BaseEvaluator):
             self.reports_name = ['Recommendation Metrics', 'Optimization Metrics']
 
     def rec_evaluate(self, ranks, label):
-        for k in [1, 10, 50]:
+        for k in [1, 10, 15, 50]:
             if len(ranks) >= k:
                 self.rec_metrics.add(f"hit@{k}", HitMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"ndcg@{k}", NDCGMetric.compute(ranks, label, k))

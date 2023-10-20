@@ -132,12 +132,7 @@ class KBRDSystem(BaseSystem):
             self.evaluator.report(mode='test')
 
     def train_conversation(self):
-        if os.environ["CUDA_VISIBLE_DEVICES"] == '-1':
-            self.model.freeze_parameters()
-        elif len(os.environ["CUDA_VISIBLE_DEVICES"]) == 1:
-            self.model.freeze_parameters()
-        else:
-            self.model.module.freeze_parameters()
+        self.model.freeze_parameters()
         self.init_optim(self.conv_optim_opt, self.model.parameters())
 
         for epoch in range(self.conv_epoch):

@@ -12,6 +12,9 @@ from crslab.evaluator.metrics.base import AverageMetric
 
 
 class HitMetric(AverageMetric):
+    """
+    Recall
+    """
     @staticmethod
     def compute(ranks, label, k) -> 'HitMetric':
         return HitMetric(int(label in ranks[:k]))

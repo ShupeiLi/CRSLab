@@ -25,7 +25,7 @@ from .config import Config
 
 ROOT_PATH = dirname(dirname(dirname(realpath(__file__))))
 SAVE_PATH = os.path.join(ROOT_PATH, 'save')
-DATA_PATH = os.path.join(ROOT_PATH, 'data')
+DATA_PATH = f"/{os.getlogin()}/CRSLab_data"
 DATASET_PATH = os.path.join(DATA_PATH, 'dataset')
 MODEL_PATH = os.path.join(DATA_PATH, 'model')
 PRETRAIN_PATH = os.path.join(MODEL_PATH, 'pretrain')

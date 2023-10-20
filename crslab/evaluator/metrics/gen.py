@@ -57,7 +57,7 @@ class F1Metric(AverageMetric):
     """
     Helper class which computes token-level F1.
     """
-
+    # TODO: Check the class
     @staticmethod
     def _prec_recall_f1_score(pred_items, gold_items):
         """
@@ -80,7 +80,7 @@ class F1Metric(AverageMetric):
     @staticmethod
     def compute(guess: str, answers: List[str]) -> 'F1Metric':
         if guess is None or answers is None:
-            return AverageMetric(0, 0)
+            return F1Metric(0, 0)
         g_tokens = guess.split()
         scores = [
             F1Metric._prec_recall_f1_score(g_tokens, a.split())
@@ -95,7 +95,7 @@ class BleuMetric(AverageMetric):
         """
         Compute approximate BLEU score between guess and a set of answers.
         """
-
+        # TODO: Check weights. I think weights should be [1/2, 1/2], [1/3, 1/3, 1/3], ...
         weights = [0] * 4
         weights[k - 1] = 1
         score = sentence_bleu(

@@ -66,14 +66,16 @@ class Config:
         # log
         log_name = self.opt.get("log_name", dataset + '_' + model_name + '_' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                                              time.localtime())) + ".log"
-        if not os.path.exists("log"):
-            os.makedirs("log")
+        # log dir path
+        log_file = f"/{os.getlogin()}/CRSLab_log"
+        if not os.path.exists(log_file):
+            os.makedirs(log_file)
         logger.remove()
         if debug:
             level = 'DEBUG'
         else:
             level = 'INFO'
-        logger.add(os.path.join("log", log_name), level=level)
+        logger.add(os.path.join(log_file, log_name), level=level)
         logger.add(lambda msg: tqdm.write(msg, end=''), colorize=True, level=level)
 
         logger.info(f"[Dataset: {dataset} tokenized in {tokenize}]")
@@ -86,6 +88,12 @@ class Config:
         if policy_model:
             logger.info(f'[Policy Model: {policy_model}]')
         logger.info("[Config]" + '\n' + json.dumps(self.opt, indent=4))
+
+        # Add model checkpoints save path
+        model_file = f"/{os.getlogin()}/CRSLab_model/"
+        if not os.path.exists(model_file):
+            os.makedirs(model_file)
+        self.opt['checkpoints'] = model_file
 
     @staticmethod
     def load_yaml_configs(filename):
