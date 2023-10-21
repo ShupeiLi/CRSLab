@@ -26,7 +26,7 @@ rec:
   epoch: 100
   batch_size: 4096
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
   optimizer:
     name: Adam
@@ -35,7 +35,7 @@ conv:
   epoch: 100
   batch_size: 32
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
   optimizer:
     name: Adam

@@ -32,7 +32,7 @@ rec:
     name: Adam
     lr: !!float 1e-3
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
 conv:
   epoch: 100
@@ -41,5 +41,5 @@ conv:
     name: Adam
     lr: !!float 1e-3
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
