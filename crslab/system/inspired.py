@@ -147,11 +147,13 @@ class InspiredSystem(BaseSystem):
         for epoch in range(self.rec_epoch):
             self.evaluator.reset_metrics()
             logger.info(f'[Recommendation epoch {str(epoch)}]')
+            logger.info('[Train]')
             for batch in self.train_dataloader['rec'].get_rec_data(self.rec_batch_size,
                                                                    shuffle=True):
                 self.step(batch, stage='rec', mode='train')
             self.evaluator.report(epoch=epoch, mode='train')
             # val
+            logger.info('[Valid]')
             with torch.no_grad():
                 self.evaluator.reset_metrics()
                 for batch in self.valid_dataloader['rec'].get_rec_data(
@@ -160,15 +162,27 @@ class InspiredSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
                 metric = self.evaluator.rec_metrics['hit@1'] + self.evaluator.rec_metrics['hit@50']
-                if self.early_stop(metric):
+                save = (epoch == (self.rec_epoch - 1))
+                if self.early_stop(metric, 0, epoch, save):
                     break
         # test
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader['rec'].get_rec_data(self.rec_batch_size,
-                                                                  shuffle=False):
-                self.step(batch, stage='rec', mode='test')
-            self.evaluator.report(mode='test')
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader['rec'].get_rec_data(self.rec_batch_size,
+                                                                    shuffle=False):
+                    self.step(batch, stage='rec', mode='test')
+                self.evaluator.report(mode='test')
+
+        logger.info('[Test]')
+        logger.info('[Test the best model]')
+        checkpoint = self._load_checkpoints(0, 'best')
+        self.rec_model.load_state_dict(checkpoint)
+        test()
+        logger.info('[Test the last model]')
+        checkpoint = self._load_checkpoints(0, 'last')
+        self.rec_model.load_state_dict(checkpoint)
+        test()
 
     def train_conversation(self):
         self.init_optim(self.conv_optim_opt, self.conv_model.parameters())
@@ -176,11 +190,13 @@ class InspiredSystem(BaseSystem):
         for epoch in range(self.conv_epoch):
             self.evaluator.reset_metrics()
             logger.info(f'[Conversation epoch {str(epoch)}]')
+            logger.info('[Train]')
             for batch in self.train_dataloader['conv'].get_conv_data(
                     batch_size=self.conv_batch_size, shuffle=True):
                 self.step(batch, stage='conv', mode='train')
             self.evaluator.report(epoch=epoch, mode='train')
             # val
+            logger.info('[Valid]')
             with torch.no_grad():
                 self.evaluator.reset_metrics()
                 for batch in self.valid_dataloader['conv'].get_conv_data(
@@ -189,15 +205,27 @@ class InspiredSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
                 metric = self.evaluator.gen_metrics['ppl']
-                if self.early_stop(metric):
+                save = (epoch == (self.conv_epoch - 1))
+                if self.early_stop(metric, 1, epoch, save):
                     break
         # test
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader['conv'].get_conv_data(
-                    batch_size=self.conv_batch_size, shuffle=False):
-                self.step((batch), stage='conv', mode='test')
-            self.evaluator.report(mode='test')
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader['conv'].get_conv_data(
+                        batch_size=self.conv_batch_size, shuffle=False):
+                    self.step((batch), stage='conv', mode='test')
+                self.evaluator.report(mode='test')
+
+        logger.info('[Test]')
+        logger.info('[Test the best model]')
+        checkpoint = self._load_checkpoints(1, 'best')
+        self.conv_model.load_state_dict(checkpoint)
+        test()
+        logger.info('[Test the last model]')
+        checkpoint = self._load_checkpoints(1, 'last')
+        self.conv_model.load_state_dict(checkpoint)
+        test()
 
     def fit(self):
         if hasattr(self, 'rec_model'):
