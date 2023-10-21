@@ -142,7 +142,7 @@ class KGSFSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.rec_metrics['hit@1'] + self.evaluator.rec_metrics['hit@50']
                 save = (epoch == (self.rec_epoch - 1))
-                if self.early_stop(metric, True, epoch, self.model, save):
+                if self.early_stop(metric, 0, epoch, self.model, save):
                     break
         # test
         def test():
@@ -154,10 +154,10 @@ class KGSFSystem(BaseSystem):
 
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(True, self.model, 'best')
+        self._load_checkpoints(0, self.model, 'best')
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(True, self.model, 'last')
+        self._load_checkpoints(0, self.model, 'last')
         test()
 
     def train_conversation(self):
@@ -181,7 +181,7 @@ class KGSFSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.optim_metrics['gen_loss']
                 save = (epoch == (self.conv_epoch - 1))
-                if self.early_stop(metric, False, epoch, self.model, save):
+                if self.early_stop(metric, 1, epoch, self.model, save):
                     break
                 
         # test
@@ -193,10 +193,10 @@ class KGSFSystem(BaseSystem):
                 self.evaluator.report(mode='test')
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(False, self.model, 'best')
+        self._load_checkpoints(1, self.model, 'best')
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(False, self.model, 'last')
+        self._load_checkpoints(1, self.model, 'last')
         test()
 
     def fit(self):

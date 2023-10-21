@@ -183,6 +183,7 @@ class TGReDialSystem(BaseSystem):
         for epoch in range(self.rec_epoch):
             self.evaluator.reset_metrics()
             logger.info(f'[Recommendation epoch {str(epoch)}]')
+            logger.info('[Train]')
             for batch in self.train_dataloader['rec'].get_rec_data(self.rec_batch_size,
                                                                    shuffle=True):
                 self.step(batch, stage='rec', mode='train')
@@ -197,16 +198,25 @@ class TGReDialSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
                 metric = self.evaluator.rec_metrics['hit@1'] + self.evaluator.rec_metrics['hit@50']
-                if self.early_stop(metric):
+                save = (epoch == (self.rec_epoch - 1))
+                if self.early_stop(metric, 0, epoch, self.rec_model, save):
                     break
         # test
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader['rec'].get_rec_data(self.rec_batch_size,
+                                                                    shuffle=False):
+                    self.step(batch, stage='rec', mode='test')
+                self.evaluator.report(mode='test')
+
         logger.info('[Test]')
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader['rec'].get_rec_data(self.rec_batch_size,
-                                                                  shuffle=False):
-                self.step(batch, stage='rec', mode='test')
-            self.evaluator.report(mode='test')
+        logger.info('[Test the best model]')
+        self._load_checkpoints(0, self.rec_model, 'best')
+        test()
+        logger.info('[Test the last model]')
+        self._load_checkpoints(0, self.rec_model, 'last')
+        test()
 
     def train_conversation(self):
         self.init_optim(self.conv_optim_opt, self.conv_model.parameters())
@@ -214,6 +224,7 @@ class TGReDialSystem(BaseSystem):
         for epoch in range(self.conv_epoch):
             self.evaluator.reset_metrics()
             logger.info(f'[Conversation epoch {str(epoch)}]')
+            logger.info('[Train]')
             for batch in self.train_dataloader['conv'].get_conv_data(
                     batch_size=self.conv_batch_size, shuffle=True):
                 self.step(batch, stage='conv', mode='train')
@@ -228,16 +239,25 @@ class TGReDialSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
                 metric = self.evaluator.gen_metrics['ppl']
-                if self.early_stop(metric):
+                save = (epoch == (self.conv_epoch - 1))
+                if self.early_stop(metric, 1, epoch, self.conv_model, save):
                     break
         # test
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader['conv'].get_conv_data(
+                        batch_size=self.conv_batch_size, shuffle=False):
+                    self.step(batch, stage='conv', mode='test')
+                self.evaluator.report(mode='test')
+
         logger.info('[Test]')
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader['conv'].get_conv_data(
-                    batch_size=self.conv_batch_size, shuffle=False):
-                self.step(batch, stage='conv', mode='test')
-            self.evaluator.report(mode='test')
+        logger.info('[Test the best model]')
+        self._load_checkpoints(1, self.conv_model, 'best')
+        test()
+        logger.info('[Test the last model]')
+        self._load_checkpoints(1, self.conv_model, 'last')
+        test()
 
     def train_policy(self):
         policy_params = list(self.policy_model.named_parameters())
@@ -260,6 +280,7 @@ class TGReDialSystem(BaseSystem):
         for epoch in range(self.policy_epoch):
             self.evaluator.reset_metrics()
             logger.info(f'[Policy epoch {str(epoch)}]')
+            logger.info('[Train]')
             # change the shuffle to True
             for batch in self.train_dataloader['policy'].get_policy_data(
                     self.policy_batch_size, shuffle=True):
@@ -275,16 +296,25 @@ class TGReDialSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
                 metric = self.evaluator.rec_metrics['hit@1'] + self.evaluator.rec_metrics['hit@50']
-                if self.early_stop(metric):
+                save = (epoch == (self.policy_epoch - 1))
+                if self.early_stop(metric, 2, epoch, self.policy_model, save):
                     break
         # test
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader['policy'].get_policy_data(
+                        self.policy_batch_size, shuffle=False):
+                    self.step(batch, stage='policy', mode='test')
+                self.evaluator.report(mode='test')
+
         logger.info('[Test]')
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader['policy'].get_policy_data(
-                    self.policy_batch_size, shuffle=False):
-                self.step(batch, stage='policy', mode='test')
-            self.evaluator.report(mode='test')
+        logger.info('[Test the best model]')
+        self._load_checkpoints(2, self.policy_model, 'best')
+        test()
+        logger.info('[Test the last model]')
+        self._load_checkpoints(2, self.policy_model, 'last')
+        test()
 
     def fit(self):
         if hasattr(self, 'rec_model'):
