@@ -246,12 +246,12 @@ class BaseSystem(ABC):
         self.scheduler.valid_step(metric)
         logger.debug('[Adjust learning rate after valid epoch]')
 
-    def _save_checkpoints(self, metric, is_rec, epoch, msg='best'):
+    def _save_checkpoints(self, metric, is_rec, epoch, model, msg='best'):
         """Save model checkpoints: best / last."""
         if is_rec:
             torch.save({
                 'epoch': epoch,
-                'model_state_dict': self.rec_model.state_dict(),
+                'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'metrics': metric,
             },
@@ -260,48 +260,48 @@ class BaseSystem(ABC):
         else:
             torch.save({
                 'epoch': epoch,
-                'model_state_dict': self.conv_model.state_dict(),
+                'model_state_dict': model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'metrics': metric,
             },
                 self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_conv_{msg}.pt"
             )
 
-    def _load_checkpoints(self, is_rec, msg='best'):
+    def _load_checkpoints(self, is_rec, model, msg='best'):
         """Load model checkpoints."""
         if is_rec:
             checkpoint = torch.load(
                 self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_rec_{msg}.pt"
             )
-            self.rec_model.load_state_dict(checkpoint['model_state_dict'])
         else:
             checkpoint = torch.load(
                 self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_conv_{msg}.pt"
             )
-            self.conv_model.load_state_dict(checkpoint['model_state_dict'])
+        model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-    def early_stop(self, metric, is_rec, epoch, save=False):
+    def early_stop(self, metric, is_rec, epoch, model, save=False):
         """ Early stop. Save the best model and the model in the last epoch.
         :param metric: early stopping metrics.
         :param is_rec: boolean. Recommendation model or conversation model.
         :param epoch: int. The number of the epoch.
+        :param model: current model.
         :param save: boolean. Save the model. (default: False)
         """
         if save:
-            self._save_checkpoints(metric, is_rec, epoch, 'last')
+            self._save_checkpoints(metric, is_rec, epoch, model, 'last')
         if not self.need_early_stop:
             return False
         if self.best_valid is None or metric * self.stop_mode > self.best_valid * self.stop_mode:
             self.best_valid = metric
             self.drop_cnt = 0
-            self._save_checkpoints(metric, is_rec, epoch, 'best')
+            self._save_checkpoints(metric, is_rec, epoch, model, 'best')
             logger.info('[Get new best model]')
             return False
         else:
             self.drop_cnt += 1
             if self.drop_cnt >= self.impatience:
-                self._save_checkpoints(metric, is_rec, epoch, 'last')
+                self._save_checkpoints(metric, is_rec, epoch, model, 'last')
                 logger.info('[Early stop]')
                 return True
 

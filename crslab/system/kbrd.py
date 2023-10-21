@@ -121,15 +121,24 @@ class KBRDSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='valid')
                 # early stop
                 metric = self.evaluator.optim_metrics['rec_loss']
-                if self.early_stop(metric):
+                save = (epoch == (self.rec_epoch - 1))
+                if self.early_stop(metric, True, epoch, self.model, save):
                     break
         # test
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
+                    self.step(batch, stage='rec', mode='test')
+                self.evaluator.report(mode='test')
+
         logger.info('[Test]')
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
-                self.step(batch, stage='rec', mode='test')
-            self.evaluator.report(mode='test')
+        logger.info('[Test the best model]')
+        self._load_checkpoints(True, self.model, 'best')
+        test()
+        logger.info('[Test the last model]')
+        self._load_checkpoints(True, self.model, 'last')
+        test()
 
     def train_conversation(self):
         self.model.freeze_parameters()
@@ -151,15 +160,24 @@ class KBRDSystem(BaseSystem):
                 self.evaluator.report(epoch=epoch, mode='valid')
                 # early stop
                 metric = self.evaluator.optim_metrics['gen_loss']
-                if self.early_stop(metric):
+                save = (epoch == (self.conv_epoch - 1))
+                if self.early_stop(metric, False, epoch, self.model, save):
                     break
         # test
+        def test():
+            with torch.no_grad():
+                self.evaluator.reset_metrics()
+                for batch in self.test_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
+                    self.step(batch, stage='conv', mode='test')
+                self.evaluator.report(mode='test')
+
         logger.info('[Test]')
-        with torch.no_grad():
-            self.evaluator.reset_metrics()
-            for batch in self.test_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
-                self.step(batch, stage='conv', mode='test')
-            self.evaluator.report(mode='test')
+        logger.info('[Test the best model]')
+        self._load_checkpoints(False, self.model, 'best')
+        test()
+        logger.info('[Test the last model]')
+        self._load_checkpoints(False, self.model, 'last')
+        test()
 
     def fit(self):
         self.train_recommender()
