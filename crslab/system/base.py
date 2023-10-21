@@ -246,80 +246,70 @@ class BaseSystem(ABC):
         self.scheduler.valid_step(metric)
         logger.debug('[Adjust learning rate after valid epoch]')
 
-    def _save_checkpoints(self, metric, model_type, epoch, model, msg='best'):
+    def _check_model_type(self, model_type):
+        if model_type == 0:
+            model_type_str = "rec"
+        elif model_type == 1:
+            model_type_str = "conv"
+        elif model_type == 2:
+            model_type_str = "policy"
+        else:
+            raise KeyError("The parameter model_type must be a integer in [0, 1, 2].")
+        return model_type_str
+
+    def _save_checkpoints(self, metric, model_type, epoch, msg='best'):
         """Save model checkpoints: best / last."""
-        if model_type == 0:
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': self.optimizer.state_dict(),
-                'metrics': metric,
-            },
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_rec_{msg}.pt"
-            )
-        elif model_type == 1:
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': self.optimizer.state_dict(),
-                'metrics': metric,
-            },
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_conv_{msg}.pt"
-            )
-        elif model_type == 2:
-            torch.save({
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': self.optimizer.state_dict(),
-                'metrics': metric,
-            },
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_policy_{msg}.pt"
-            )
-        else:
-            raise KeyError("The parameter model_type must be a integer in [0, 1, 2].")
+        model_type_str = self._check_model_type(model_type)
+        state = {
+            'epoch': epoch,
+            'optimizer_state_dict': self.optimizer.state_dict(),
+            'metrics': metric,
+        }
 
-    def _load_checkpoints(self, model_type, model, msg='best'):
+        if hasattr(self, 'model'):
+            state['model_state_dict'] = self.model.state_dict()
+        elif model_type == 0:
+            state['model_state_dict'] = self.rec_model.state_dict()
+        elif model_type == 1:
+            state['model_state_dict'] = self.conv_model.state_dict()
+        elif model_type == 2:
+            state['model_state_dict'] = self.policy_model.state_dict()
+        
+        torch.save(state,
+            self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_{model_type_str}_{msg}.pt"
+        )
+
+    def _load_checkpoints(self, model_type, msg='best'):
         """Load model checkpoints."""
-        if model_type == 0:
-            checkpoint = torch.load(
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_rec_{msg}.pt"
-            )
-        elif model_type == 1:
-            checkpoint = torch.load(
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_conv_{msg}.pt"
-            )
-        elif model_type == 2:
-            checkpoint = torch.load(
-                self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_policy_{msg}.pt"
-            )
-        else:
-            raise KeyError("The parameter model_type must be a integer in [0, 1, 2].")
+        model_type_str = self._check_model_type(model_type)
+        checkpoint = torch.load(
+            self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_{model_type_str}_{msg}.pt"
+        )
 
-        model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        return checkpoint['model_state_dict']
 
-    def early_stop(self, metric, model_type, epoch, model, save=False):
+    def early_stop(self, metric, model_type, epoch, save=False):
         """ Early stop. Save the best model and the model in the last epoch.
         :param metric: early stopping metrics.
         :param model_type: int. Recommendation model - 0, conversation model - 1, policy model - 2.
         :param epoch: int. The number of the epoch.
-        :param model: current model.
         :param save: boolean. Save the model. (default: False)
         """
         if save:
-            self._save_checkpoints(metric, model_type, epoch, model, 'last')
+            self._save_checkpoints(metric, model_type, epoch, 'last')
         if not self.need_early_stop:
             return False
         if self.best_valid is None or metric * self.stop_mode > self.best_valid * self.stop_mode:
             self.best_valid = metric
             self.drop_cnt = 0
-            self._save_checkpoints(metric, model_type, epoch, model, 'best')
+            self._save_checkpoints(metric, model_type, epoch, 'best')
             logger.info('[Get new best model]')
             return False
         else:
             self.drop_cnt += 1
             if self.drop_cnt >= self.impatience:
-                self._save_checkpoints(metric, model_type, epoch, model, 'last')
+                self._save_checkpoints(metric, model_type, epoch, 'last')
                 logger.info('[Early stop]')
                 return True
 

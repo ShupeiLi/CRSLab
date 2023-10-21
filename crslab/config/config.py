@@ -67,7 +67,7 @@ class Config:
         log_name = self.opt.get("log_name", dataset + '_' + model_name + '_' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                                              time.localtime())) + ".log"
         # log dir path
-        log_file = f"/{os.getlogin()}/CRSLab_log"
+        log_file = f"/{os.getlogin()}/autodl-tmp/CRSLab_log"
         if not os.path.exists(log_file):
             os.makedirs(log_file)
         logger.remove()
@@ -90,7 +90,7 @@ class Config:
         logger.info("[Config]" + '\n' + json.dumps(self.opt, indent=4))
 
         # Add model checkpoints save path
-        model_file = f"/{os.getlogin()}/CRSLab_model/"
+        model_file = f"/{os.getlogin()}/autodl-tmp/CRSLab_model/"
         if not os.path.exists(model_file):
             os.makedirs(model_file)
         self.opt['checkpoints'] = model_file

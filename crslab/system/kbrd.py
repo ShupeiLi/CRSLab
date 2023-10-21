@@ -122,7 +122,7 @@ class KBRDSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.optim_metrics['rec_loss']
                 save = (epoch == (self.rec_epoch - 1))
-                if self.early_stop(metric, 0, epoch, self.model, save):
+                if self.early_stop(metric, 0, epoch, save):
                     break
         # test
         def test():
@@ -134,10 +134,12 @@ class KBRDSystem(BaseSystem):
 
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(0, self.model, 'best')
+        checkpoint = self._load_checkpoints(0, 'best')
+        self.model.load_state_dict(checkpoint)
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(0, self.model, 'last')
+        checkpoint = self._load_checkpoints(0, 'last')
+        self.model.load_state_dict(checkpoint)
         test()
 
     def train_conversation(self):
@@ -161,7 +163,7 @@ class KBRDSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.optim_metrics['gen_loss']
                 save = (epoch == (self.conv_epoch - 1))
-                if self.early_stop(metric, 1, epoch, self.model, save):
+                if self.early_stop(metric, 1, epoch, save):
                     break
         # test
         def test():
@@ -173,10 +175,12 @@ class KBRDSystem(BaseSystem):
 
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(1, self.model, 'best')
+        checkpoint = self._load_checkpoints(1, 'best')
+        self.model.load_state_dict(checkpoint)
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(1, self.model, 'last')
+        checkpoint = self._load_checkpoints(1, 'last')
+        self.model.load_state_dict(checkpoint)
         test()
 
     def fit(self):

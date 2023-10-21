@@ -119,7 +119,7 @@ class ReDialSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.optim_metrics['rec_loss']
                 save = (epoch == (self.rec_epoch - 1))
-                if self.early_stop(metric, 0, epoch, self.rec_model, save):
+                if self.early_stop(metric, 0, epoch, save):
                     break
 
         # test
@@ -132,10 +132,12 @@ class ReDialSystem(BaseSystem):
 
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(0, self.rec_model, 'best')
+        checkpoint = self._load_checkpoints(0, 'best')
+        self.rec_model.load_state_dict(checkpoint)
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(0, self.rec_model, 'last')
+        checkpoint = self._load_checkpoints(0, 'last')
+        self.rec_model.load_state_dict(checkpoint)
         test()
 
     def train_conversation(self):
@@ -159,7 +161,7 @@ class ReDialSystem(BaseSystem):
                 # early stop
                 metric = self.evaluator.optim_metrics['gen_loss']
                 save = (epoch == (self.conv_epoch - 1))
-                if self.early_stop(metric, 1, epoch, self.conv_model, save):
+                if self.early_stop(metric, 1, epoch, save):
                     break
 
         # test
@@ -172,10 +174,12 @@ class ReDialSystem(BaseSystem):
 
         logger.info('[Test]')
         logger.info('[Test the best model]')
-        self._load_checkpoints(1, self.conv_model, 'best')
+        checkpoint = self._load_checkpoints(1, 'best')
+        self.conv_model.load_state_dict(checkpoint)
         test()
         logger.info('[Test the last model]')
-        self._load_checkpoints(1, self.conv_model, 'last')
+        checkpoint = self._load_checkpoints(1, 'last')
+        self.conv_model.load_state_dict(checkpoint)
         test()
 
     def fit(self):
