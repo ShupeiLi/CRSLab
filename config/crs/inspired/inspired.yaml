@@ -15,7 +15,7 @@ rec_model: InspiredRec
 conv_model: InspiredConv
 # optim
 rec:
-  epoch: 1
+  epoch: 100
   batch_size: 8
   optimizer:
     name: AdamW
@@ -23,10 +23,10 @@ rec:
     weight_decay: !!float 0.0000
   early_stop: true
   stop_mode: max
-  impatience: 3
+  impatience: 5
   lr_bert: !!float 1e-5
 conv:
-  epoch: 50
+  epoch: 100
   batch_size: 1
   optimizer:
     name: AdamW
@@ -37,6 +37,6 @@ conv:
     name: TransformersLinearLR
     warmup_steps: 100
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
   label_smoothing: -1
