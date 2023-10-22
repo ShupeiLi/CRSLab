@@ -26,8 +26,8 @@ decoder_hidden_size: 256
 decoder_num_layers: 1
 # optim
 rec:
-  epoch: 50
-  batch_size: 64
+  epoch: 100
+  batch_size: 1024
   optimizer:
     name: Adam
     lr: !!float 1e-3
@@ -35,8 +35,8 @@ rec:
   impatience: 5
   stop_mode: min
 conv:
-  epoch: 50
-  batch_size: 4
+  epoch: 100
+  batch_size: 128
   optimizer:
     name: Adam
     lr: !!float 1e-3
