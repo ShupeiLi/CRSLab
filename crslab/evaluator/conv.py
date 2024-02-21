@@ -58,7 +58,7 @@ class ConvEvaluator(BaseEvaluator):
         return [self.ft[token] for token in sent.split()]
 
     def gen_evaluate(self, hyp, refs):
-        if hyp:
+        if hyp:  # TODO: 检查 hyp 有没有 normalize
             self.gen_metrics.add("f1", F1Metric.compute(hyp, refs))
 
             for k in range(1, 5):
@@ -67,7 +67,7 @@ class ConvEvaluator(BaseEvaluator):
                 hyp_token = hyp.split()
                 for token in ngrams(hyp_token, k):
                     self.dist_set[f"dist@{k}"].add(token)
-            self.dist_cnt += 1
+            self.dist_cnt += 1  # TODO: 假设 hyp 是 normalized 的，那么此处的 distinct 是 inter-distinct
 
             hyp_emb = self._get_sent_embedding(hyp)
             ref_embs = [self._get_sent_embedding(ref) for ref in refs]

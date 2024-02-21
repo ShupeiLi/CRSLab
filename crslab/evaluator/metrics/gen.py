@@ -16,6 +16,8 @@ from nltk import ngrams
 from nltk.translate.bleu_score import sentence_bleu
 from sklearn.metrics.pairwise import cosine_similarity
 from typing import List, Optional
+from nltk.translate import bleu_score as nltkbleu
+import rouge
 
 from crslab.evaluator.metrics.base import AverageMetric, SumMetric
 
@@ -33,12 +35,11 @@ def normalize_answer(s):
     """
     Lower text and remove punctuation, articles and extra whitespace.
     """
-
     s = s.lower()
     s = re_punc.sub(' ', s)
     s = re_art.sub(' ', s)
     s = re_space.sub(' ', s)
-    # s = ' '.join(s.split())
+    s = ' '.join(s.split())
     return s
 
 
@@ -95,17 +96,45 @@ class BleuMetric(AverageMetric):
         """
         Compute approximate BLEU score between guess and a set of answers.
         """
-        # TODO: Check weights. I think weights should be [1/2, 1/2], [1/3, 1/3, 1/3], ...
-        weights = [0] * 4
-        weights[k - 1] = 1
+        weights =  [1 / k for _ in range(k)]  # Correct weights
         score = sentence_bleu(
-            [a.split(" ") for a in answers],
-            guess.split(" "),
+            [normalize_answer(a).split(" ") for a in answers],
+            normalize_answer(guess).split(" "),
+            smoothing_function=nltkbleu.SmoothingFunction(epsilon=1e-12).method1,
             weights=weights,
         )
         return BleuMetric(score)
 
 
+class RougeMetric(AverageMetric):
+    _evaluator = None
+
+    @staticmethod
+    def compute_many(guess: str, answers: List[str], measure: str = 'r'):
+        """
+        Compute ROUGE score.
+        """
+        measure = measure.lower()
+        assert measure in ('r', 'f', 'p'), "Parameter 'measure' must be one of the 'r', 'f', 'p'."
+        if RougeMetric._evaluator is None:
+            RougeMetric._evaluator = rouge.Rouge(metrics=['rouge-n', 'rouge-l'], max_n=2)
+        scores = [
+            RougeMetric._evaluator.get_scores(
+                normalize_answer(guess), normalize_answer(a)
+            )
+            for a in answers
+        ]
+        scores_rouge1 = max(score['rouge-1'][measure] for score in scores)
+        scores_rouge2 = max(score['rouge-2'][measure] for score in scores)
+        scores_rougeL = max(score['rouge-l'][measure] for score in scores)
+        return (
+            RougeMetric(scores_rouge1),
+            RougeMetric(scores_rouge2),
+            RougeMetric(scores_rougeL),
+        )
+
+
+# TODO: 这个类貌似没有用到，evaluator/conv.py 里的 distinct 是单独实现的
 class DistMetric(SumMetric):
     @staticmethod
     def compute(sent: str, k: int) -> 'DistMetric':
