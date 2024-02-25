@@ -36,7 +36,7 @@ class ConvEvaluator(BaseEvaluator):
 
     def __init__(self, tensorboard=False):
         super(ConvEvaluator, self).__init__()
-        self.dist_set = defaultdict(set)
+        self.dist_set = defaultdict(set)  # NOTE: Initialize the inter-distinct metrics.
         self.dist_cnt = 0
         self.gen_metrics = Metrics()
         self.optim_metrics = Metrics()
@@ -58,16 +58,24 @@ class ConvEvaluator(BaseEvaluator):
         return [self.ft[token] for token in sent.split()]
 
     def gen_evaluate(self, hyp, refs):
-        if hyp:  # TODO: 检查 hyp 有没有 normalize
+        if hyp:
             self.gen_metrics.add("f1", F1Metric.compute(hyp, refs))
 
+            # NOTE: ROUGE-{1, 2, l}
+            rouge_scores = RougeMetric.compute_many(hyp, refs)
+            rouge_keys = ("1", "2", "L")
+            for i in range(3):
+                self.gen_metrics.add(f"rouge-{rouge_keys[i]}", rouge_scores[i])
+
+            # NOTE: BLEU-{1, 2, 3, 4}, Inter-distinct-{1, 2, 3, 4}, Intra-distinct-{1, 2, 3, 4}
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
+                self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
                 # split sentence to tokens here
-                hyp_token = hyp.split()
+                hyp_token = gen.normalize_answer(hyp).split()
                 for token in ngrams(hyp_token, k):
-                    self.dist_set[f"dist@{k}"].add(token)
-            self.dist_cnt += 1  # TODO: 假设 hyp 是 normalized 的，那么此处的 distinct 是 inter-distinct
+                    self.dist_set[f"inter-dist@{k}"].add(token)
+            self.dist_cnt += 1
 
             hyp_emb = self._get_sent_embedding(hyp)
             ref_embs = [self._get_sent_embedding(ref) for ref in refs]

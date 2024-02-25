@@ -19,13 +19,14 @@ from typing import List, Optional
 from nltk.translate import bleu_score as nltkbleu
 import rouge
 
-from crslab.evaluator.metrics.base import AverageMetric, SumMetric
+from crslab.evaluator.metrics.base import AverageMetric, SumMetric, Metric
 
 re_art = re.compile(r'\b(a|an|the)\b')
 re_punc = re.compile(r'[!"#$%&()*+,-./:;<=>?@\[\]\\^`{|}~_\']')
 re_space = re.compile(r'\s+')
 
 
+# NOTE: Refered in `system` module `step` function
 class PPLMetric(AverageMetric):
     def value(self):
         return math.exp(super().value())
@@ -58,7 +59,6 @@ class F1Metric(AverageMetric):
     """
     Helper class which computes token-level F1.
     """
-    # TODO: Check the class
     @staticmethod
     def _prec_recall_f1_score(pred_items, gold_items):
         """
@@ -91,6 +91,9 @@ class F1Metric(AverageMetric):
 
 
 class BleuMetric(AverageMetric):
+    """
+    Compute BLEU score.
+    """
     @staticmethod
     def compute(guess: str, answers: List[str], k: int) -> Optional['BleuMetric']:
         """
@@ -134,7 +137,21 @@ class RougeMetric(AverageMetric):
         )
 
 
-# TODO: 这个类貌似没有用到，evaluator/conv.py 里的 distinct 是单独实现的
+class IntraDistinctMetric(AverageMetric):
+    """
+    Compute intra-distinct (sample-based).
+    """
+    @staticmethod
+    def compute(guess: str, answers: List[str], k: int) -> Optional['IntraDistinctMetric']:
+        intra = 0.0
+        for answer in answers:
+            tokens = normalize_answer(answer).split()
+            counts = Counter(ngrams(tokens, k))
+            intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
+        return IntraDistinctMetric(intra, len(answers))
+
+
+# NOTE: Not used. Inter-distinct is implemented separately in evaluator/conv.py.
 class DistMetric(SumMetric):
     @staticmethod
     def compute(sent: str, k: int) -> 'DistMetric':

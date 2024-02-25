@@ -11,6 +11,7 @@ import math
 from crslab.evaluator.metrics.base import AverageMetric
 
 
+# NOTE: Equivalent to Recall
 class HitMetric(AverageMetric):
     """
     Recall
