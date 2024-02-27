@@ -67,7 +67,7 @@ class StandardEvaluator(BaseEvaluator):
     def rec_evaluate(self, ranks, label):
         for k in [1, 10, 50]:
             if len(ranks) >= k:
-                self.rec_metrics.add(f"hit@{k}", HitMetric.compute(ranks, label, k))
+                self.rec_metrics.add(f"recall@{k}", HitMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"ndcg@{k}", NDCGMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"mrr@{k}", MRRMetric.compute(ranks, label, k))
 
@@ -75,10 +75,19 @@ class StandardEvaluator(BaseEvaluator):
         if hyp:
             self.gen_metrics.add("f1", F1Metric.compute(hyp, refs))
 
+            # NOTE: ROUGE-{1, 2, l}
+            rouge_scores = RougeMetric.compute_many(hyp, refs)
+            rouge_keys = ("1", "2", "L")
+            for i in range(3):
+                self.gen_metrics.add(f"rouge-{rouge_keys[i]}", rouge_scores[i])
+
+            # NOTE: BLEU-{1, 2, 3, 4}, Inter-distinct-{1, 2, 3, 4}, Intra-distinct-{1, 2, 3, 4}
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
+                self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
+                hyp_token = gen.normalize_answer(hyp).split()  # NOTE: The original code doesn't split tokens (a bug?).
                 for token in ngrams(hyp, k):
-                    self.dist_set[f"dist@{k}"].add(token)
+                    self.dist_set[f"inter-dist@{k}"].add(token)
             self.dist_cnt += 1
 
             hyp_emb = self._get_sent_embedding(hyp)

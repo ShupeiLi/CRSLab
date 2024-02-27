@@ -6,6 +6,7 @@ log
 save
 !crslab/data
 runs
+model
 
 ### VisualStudioCode template
 .vscode/*

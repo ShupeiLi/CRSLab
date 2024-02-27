@@ -90,7 +90,7 @@ class Config:
         logger.info("[Config]" + '\n' + json.dumps(self.opt, indent=4))
 
         # Add model checkpoints save path
-        model_file = f"./model"
+        model_file = f"./model/"
         if not os.path.exists(model_file):
             os.makedirs(model_file)
         self.opt['checkpoints'] = model_file

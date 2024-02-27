@@ -101,6 +101,7 @@ class KBRDSystem(BaseSystem):
             else:
                 preds = self.model.forward(batch, mode, stage)
                 self.conv_evaluate(preds, batch['response'])
+                self.evaluator.gen_metrics.add("ppl", PPLMetric(preds[0]))
 
     def train_recommender(self):
         self.init_optim(self.rec_optim_opt, self.model.parameters())
