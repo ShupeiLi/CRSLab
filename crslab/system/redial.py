@@ -21,7 +21,7 @@ class ReDialSystem(BaseSystem):
     """This is the system for KGSF model"""
 
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         """
 
         Args:
@@ -38,7 +38,7 @@ class ReDialSystem(BaseSystem):
 
         """
         super(ReDialSystem, self).__init__(opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data,
-                                           restore_system, interact, debug, tensorboard)
+                                           restore_system, interact, debug, tensorboard, test_only)
         self.ind2tok = vocab['conv']['ind2tok']
         self.end_token_idx = vocab['conv']['end']
         self.item_ids = side_data['rec']['item_entity_ids']

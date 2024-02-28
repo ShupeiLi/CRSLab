@@ -18,10 +18,10 @@ from crslab.system.utils.functions import ind2slot,ind2txt_with_slots
 class NTRDSystem(BaseSystem):
     """This is the system for NTRD model"""
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         
         super(NTRDSystem, self).__init__(opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data,
-                                         restore_system, interact, debug, tensorboard)
+                                         restore_system, interact, debug, tensorboard, test_only)
 
         self.ind2tok = vocab['ind2tok']
         self.ind2movie = vocab['id2entity']

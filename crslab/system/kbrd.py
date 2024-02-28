@@ -23,7 +23,7 @@ class KBRDSystem(BaseSystem):
     """This is the system for KBRD model"""
 
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         """
 
         Args:
@@ -40,7 +40,7 @@ class KBRDSystem(BaseSystem):
 
         """
         super(KBRDSystem, self).__init__(opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data,
-                                         restore_system, interact, debug, tensorboard)
+                                         restore_system, interact, debug, tensorboard, test_only)
 
         self.ind2tok = vocab['ind2tok']
         self.end_token_idx = vocab['end']
@@ -101,30 +101,31 @@ class KBRDSystem(BaseSystem):
             else:
                 preds = self.model.forward(batch, mode, stage)
                 self.conv_evaluate(preds, batch['response'])
-                self.evaluator.gen_metrics.add("ppl", PPLMetric(preds[0]))
 
     def train_recommender(self):
         self.init_optim(self.rec_optim_opt, self.model.parameters())
 
-        for epoch in range(self.rec_epoch):
-            self.evaluator.reset_metrics()
-            logger.info(f'[Recommendation epoch {str(epoch)}]')
-            logger.info('[Train]')
-            for batch in self.train_dataloader.get_rec_data(self.rec_batch_size):
-                self.step(batch, stage='rec', mode='train')
-            self.evaluator.report(epoch=epoch, mode='train')
-            # val
-            logger.info('[Valid]')
-            with torch.no_grad():
+        if not self.test_only:
+            for epoch in range(self.rec_epoch):
                 self.evaluator.reset_metrics()
-                for batch in self.valid_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
-                    self.step(batch, stage='rec', mode='valid')
-                self.evaluator.report(epoch=epoch, mode='valid')
-                # early stop
-                metric = self.evaluator.optim_metrics['rec_loss']
-                save = (epoch == (self.rec_epoch - 1))
-                if self.early_stop(metric, 0, epoch, save):
-                    break
+                logger.info(f'[Recommendation epoch {str(epoch)}]')
+                logger.info('[Train]')
+                for batch in self.train_dataloader.get_rec_data(self.rec_batch_size):
+                    self.step(batch, stage='rec', mode='train')
+                self.evaluator.report(epoch=epoch, mode='train')
+                # val
+                logger.info('[Valid]')
+                with torch.no_grad():
+                    self.evaluator.reset_metrics()
+                    for batch in self.valid_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
+                        self.step(batch, stage='rec', mode='valid')
+                    self.evaluator.report(epoch=epoch, mode='valid')
+                    # early stop
+                    metric = self.evaluator.optim_metrics['rec_loss']
+                    save = (epoch == (self.rec_epoch - 1))
+                    if self.early_stop(metric, 0, epoch, save):
+                        break
+
         # test
         def test():
             with torch.no_grad():
@@ -147,25 +148,27 @@ class KBRDSystem(BaseSystem):
         self.model.freeze_parameters()
         self.init_optim(self.conv_optim_opt, self.model.parameters())
 
-        for epoch in range(self.conv_epoch):
-            self.evaluator.reset_metrics()
-            logger.info(f'[Conversation epoch {str(epoch)}]')
-            logger.info('[Train]')
-            for batch in self.train_dataloader.get_conv_data(batch_size=self.conv_batch_size):
-                self.step(batch, stage='conv', mode='train')
-            self.evaluator.report(epoch=epoch, mode='train')
-            # val
-            logger.info('[Valid]')
-            with torch.no_grad():
+        if not self.test_only:
+            for epoch in range(self.conv_epoch):
                 self.evaluator.reset_metrics()
-                for batch in self.valid_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
-                    self.step(batch, stage='conv', mode='valid')
-                self.evaluator.report(epoch=epoch, mode='valid')
-                # early stop
-                metric = self.evaluator.optim_metrics['gen_loss']
-                save = (epoch == (self.conv_epoch - 1))
-                if self.early_stop(metric, 1, epoch, save):
-                    break
+                logger.info(f'[Conversation epoch {str(epoch)}]')
+                logger.info('[Train]')
+                for batch in self.train_dataloader.get_conv_data(batch_size=self.conv_batch_size):
+                    self.step(batch, stage='conv', mode='train')
+                self.evaluator.report(epoch=epoch, mode='train')
+                # val
+                logger.info('[Valid]')
+                with torch.no_grad():
+                    self.evaluator.reset_metrics()
+                    for batch in self.valid_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
+                        self.step(batch, stage='conv', mode='valid')
+                    self.evaluator.report(epoch=epoch, mode='valid')
+                    # early stop
+                    metric = self.evaluator.optim_metrics['gen_loss']
+                    save = (epoch == (self.conv_epoch - 1))
+                    if self.early_stop(metric, 1, epoch, save):
+                        break
+
         # test
         def test():
             with torch.no_grad():

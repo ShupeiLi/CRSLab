@@ -14,7 +14,7 @@ from crslab.system import get_system
 
 
 def run_crslab(config, save_data=False, restore_data=False, save_system=False, restore_system=False,
-               interact=False, debug=False, tensorboard=False):
+               interact=False, debug=False, tensorboard=False, test_only=False):
     """A fast running api, which includes the complete process of training and testing models on specified datasets.
 
     Args:
@@ -27,6 +27,7 @@ def run_crslab(config, save_data=False, restore_data=False, save_system=False, r
         restore_system (bool): whether to restore system. Defaults to False.
         interact (bool): whether to interact with the system. Defaults to False.
         debug (bool): whether to debug the system. Defaults to False.
+        test_only(bool): only test the system.
 
     .. _Github repo:
        https://github.com/RUCAIBox/CRSLab
@@ -66,7 +67,7 @@ def run_crslab(config, save_data=False, restore_data=False, save_system=False, r
             test_dataloader[task] = get_dataloader(config, test_data, vocab[task])
     # system
     CRS = get_system(config, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system,
-                     interact, debug, tensorboard)
+                     interact, debug, tensorboard, test_only)
     if interact:
         CRS.interact()
     else:

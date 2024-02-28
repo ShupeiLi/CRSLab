@@ -22,7 +22,7 @@ class KGSFSystem(BaseSystem):
     """This is the system for KGSF model"""
 
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         """
 
         Args:
@@ -39,7 +39,7 @@ class KGSFSystem(BaseSystem):
 
         """
         super(KGSFSystem, self).__init__(opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data,
-                                         restore_system, interact, debug, tensorboard)
+                                         restore_system, interact, debug, tensorboard, test_only)
 
         self.ind2tok = vocab['ind2tok']
         self.end_token_idx = vocab['end']

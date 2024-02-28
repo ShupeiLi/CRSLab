@@ -13,6 +13,7 @@
 # @Email  : oran_official@outlook.com
 
 import os
+import sys
 from abc import ABC, abstractmethod
 import numpy as np
 import random
@@ -42,7 +43,7 @@ class BaseSystem(ABC):
     """Base class for all system"""
 
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         """
 
         Args:
@@ -87,6 +88,7 @@ class BaseSystem(ABC):
             self.test_dataloader = test_dataloader
         self.vocab = vocab
         self.side_data = side_data
+        self.test_only = test_only
         # model
         if 'model' in opt:
             self.model = get_model(opt, opt['model'], self.device, vocab, side_data).to(self.device)
@@ -282,10 +284,11 @@ class BaseSystem(ABC):
     def _load_checkpoints(self, model_type, msg='best'):
         """Load model checkpoints."""
         model_type_str = self._check_model_type(model_type)
-        checkpoint = torch.load(
-            self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_{model_type_str}_{msg}.pt"
-        )
-
+        model_path = self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_{model_type_str}_{msg}.pt"
+        if not os.path.isfile(model_path):
+            logger.error(f"{model_path} doesn't exist.")
+            sys.exit()
+        checkpoint = torch.load(model_path)
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         return checkpoint['model_state_dict']
 

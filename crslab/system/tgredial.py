@@ -25,7 +25,7 @@ class TGReDialSystem(BaseSystem):
     """This is the system for TGReDial model"""
 
     def __init__(self, opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-                 interact=False, debug=False, tensorboard=False):
+                 interact=False, debug=False, tensorboard=False, test_only=False):
         """
 
         Args:
@@ -43,7 +43,7 @@ class TGReDialSystem(BaseSystem):
         """
         super(TGReDialSystem, self).__init__(opt, train_dataloader, valid_dataloader,
                                              test_dataloader, vocab, side_data, restore_system, interact, debug,
-                                             tensorboard)
+                                             tensorboard, test_only)
 
         if hasattr(self, 'conv_model'):
             self.ind2tok = vocab['conv']['ind2tok']

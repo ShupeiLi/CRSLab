@@ -46,14 +46,14 @@ system_register_table = {
 
 
 def get_system(opt, train_dataloader, valid_dataloader, test_dataloader, vocab, side_data, restore_system=False,
-               interact=False, debug=False, tensorboard=False):
+               interact=False, debug=False, tensorboard=False, test_only=False):
     """
     return the system class
     """
     model_name = opt['model_name']
     if model_name in system_register_table:
         system = system_register_table[model_name](opt, train_dataloader, valid_dataloader, test_dataloader, vocab,
-                                                   side_data, restore_system, interact, debug, tensorboard)
+                                                   side_data, restore_system, interact, debug, tensorboard, test_only)
         logger.info(f'[Build system {model_name}]')
         return system
     else:
