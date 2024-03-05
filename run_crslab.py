@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', type=str,
-                        default='config/crs/kbrd/tgredial.yaml', help='config file(yaml) path')
+                        default='config/crs/kgsf/tgredial.yaml', help='config file(yaml) path')
     parser.add_argument('-g', '--gpu', type=str, default='0',
                         help='specify GPU id(s) to use, we now support multiple GPUs. Defaults to CPU(-1).')
     parser.add_argument('-sd', '--save_data', action='store_true',
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                         help='save trained system')
     parser.add_argument('-rs', '--restore_system', action='store_true',
                         help='restore trained system')
-    parser.add_argument('-d', '--debug', action='store_true', default=True,
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='use valid dataset to debug your system')
     parser.add_argument('-i', '--interact', action='store_true',
                         help='interact with your system instead of training')
