@@ -140,7 +140,7 @@ class KGSFSystem(BaseSystem):
                     self.step(batch, stage='rec', mode='val')
                 self.evaluator.report(epoch=epoch, mode='val')
                 # early stop
-                metric = self.evaluator.rec_metrics['hit@1'] + self.evaluator.rec_metrics['hit@50']
+                metric = self.evaluator.rec_metrics['recall@1'] + self.evaluator.rec_metrics['recall@50']
                 save = (epoch == (self.rec_epoch - 1))
                 if self.early_stop(metric, 0, epoch, save):
                     break

@@ -37,7 +37,7 @@ class RecEvaluator(BaseEvaluator):
     def rec_evaluate(self, ranks, label):
         for k in [1, 10, 50]:
             if len(ranks) >= k:
-                self.rec_metrics.add(f"hit@{k}", HitMetric.compute(ranks, label, k))
+                self.rec_metrics.add(f"recall@{k}", HitMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"ndcg@{k}", NDCGMetric.compute(ranks, label, k))
                 self.rec_metrics.add(f"mrr@{k}", MRRMetric.compute(ranks, label, k))
 
