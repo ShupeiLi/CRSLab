@@ -125,25 +125,26 @@ class KGSFSystem(BaseSystem):
     def train_recommender(self):
         self.init_optim(self.rec_optim_opt, self.model.parameters())
 
-        for epoch in range(self.rec_epoch):
-            self.evaluator.reset_metrics()
-            logger.info(f'[Recommendation epoch {str(epoch)}]')
-            logger.info('[Train]')
-            for batch in self.train_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
-                self.step(batch, stage='rec', mode='train')
-            self.evaluator.report(epoch=epoch, mode='train')
-            # val
-            logger.info('[Valid]')
-            with torch.no_grad():
+        if not self.test_only:
+            for epoch in range(self.rec_epoch):
                 self.evaluator.reset_metrics()
-                for batch in self.valid_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
-                    self.step(batch, stage='rec', mode='val')
-                self.evaluator.report(epoch=epoch, mode='val')
-                # early stop
-                metric = self.evaluator.rec_metrics['recall@1'] + self.evaluator.rec_metrics['recall@50']
-                save = (epoch == (self.rec_epoch - 1))
-                if self.early_stop(metric, 0, epoch, save):
-                    break
+                logger.info(f'[Recommendation epoch {str(epoch)}]')
+                logger.info('[Train]')
+                for batch in self.train_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
+                    self.step(batch, stage='rec', mode='train')
+                self.evaluator.report(epoch=epoch, mode='train')
+                # val
+                logger.info('[Valid]')
+                with torch.no_grad():
+                    self.evaluator.reset_metrics()
+                    for batch in self.valid_dataloader.get_rec_data(self.rec_batch_size, shuffle=False):
+                        self.step(batch, stage='rec', mode='val')
+                    self.evaluator.report(epoch=epoch, mode='val')
+                    # early stop
+                    metric = self.evaluator.rec_metrics['recall@1'] + self.evaluator.rec_metrics['recall@50']
+                    save = (epoch == (self.rec_epoch - 1))
+                    if self.early_stop(metric, 0, epoch, save):
+                        break
         # test
         def test():
             with torch.no_grad():
@@ -167,25 +168,26 @@ class KGSFSystem(BaseSystem):
         self.model.freeze_parameters()
         self.init_optim(self.conv_optim_opt, self.model.parameters())
 
-        for epoch in range(self.conv_epoch):
-            self.evaluator.reset_metrics()
-            logger.info(f'[Conversation epoch {str(epoch)}]')
-            logger.info('[Train]')
-            for batch in self.train_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
-                self.step(batch, stage='conv', mode='train')
-            self.evaluator.report(epoch=epoch, mode='train')
-            # val
-            logger.info('[Valid]')
-            with torch.no_grad():
+        if not self.test_only:
+            for epoch in range(self.conv_epoch):
                 self.evaluator.reset_metrics()
-                for batch in self.valid_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
-                    self.step(batch, stage='conv', mode='val')
-                self.evaluator.report(epoch=epoch, mode='val')
-                # early stop
-                metric = self.evaluator.optim_metrics['gen_loss']
-                save = (epoch == (self.conv_epoch - 1))
-                if self.early_stop(metric, 1, epoch, save):
-                    break
+                logger.info(f'[Conversation epoch {str(epoch)}]')
+                logger.info('[Train]')
+                for batch in self.train_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
+                    self.step(batch, stage='conv', mode='train')
+                self.evaluator.report(epoch=epoch, mode='train')
+                # val
+                logger.info('[Valid]')
+                with torch.no_grad():
+                    self.evaluator.reset_metrics()
+                    for batch in self.valid_dataloader.get_conv_data(batch_size=self.conv_batch_size, shuffle=False):
+                        self.step(batch, stage='conv', mode='val')
+                    self.evaluator.report(epoch=epoch, mode='val')
+                    # early stop
+                    metric = self.evaluator.optim_metrics['gen_loss']
+                    save = (epoch == (self.conv_epoch - 1))
+                    if self.early_stop(metric, 1, epoch, save):
+                        break
                 
         # test
         def test():
@@ -206,7 +208,8 @@ class KGSFSystem(BaseSystem):
         test()
 
     def fit(self):
-        self.pretrain()
+        if not self.test_only:
+            self.pretrain()
         self.train_recommender()
         self.train_conversation()
 
