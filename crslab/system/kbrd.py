@@ -137,8 +137,9 @@ class KBRDSystem(BaseSystem):
         logger.info('[Test]')
         logger.info('[Test the best model]')
         checkpoint = self._load_checkpoints(0, 'best')
-        self.model.load_state_dict(checkpoint)
-        test()
+        if checkpoint is not None:
+            self.model.load_state_dict(checkpoint)
+            test()
         logger.info('[Test the last model]')
         checkpoint = self._load_checkpoints(0, 'last')
         self.model.load_state_dict(checkpoint)
@@ -180,8 +181,9 @@ class KBRDSystem(BaseSystem):
         logger.info('[Test]')
         logger.info('[Test the best model]')
         checkpoint = self._load_checkpoints(1, 'best')
-        self.model.load_state_dict(checkpoint)
-        test()
+        if checkpoint is not None:
+            self.model.load_state_dict(checkpoint)
+            test()
         logger.info('[Test the last model]')
         checkpoint = self._load_checkpoints(1, 'last')
         self.model.load_state_dict(checkpoint)

@@ -13,7 +13,6 @@
 # @Email  : oran_official@outlook.com
 
 import os
-import sys
 from abc import ABC, abstractmethod
 import numpy as np
 import random
@@ -286,8 +285,8 @@ class BaseSystem(ABC):
         model_type_str = self._check_model_type(model_type)
         model_path = self.opt['checkpoints'] + f"{self.opt['model_name']}_{self.opt['dataset']}_{model_type_str}_{msg}.pt"
         if not os.path.isfile(model_path):
-            logger.error(f"{model_path} doesn't exist.")
-            sys.exit()
+            logger.warning(f"{model_path} doesn't exist.")
+            return None
         checkpoint = torch.load(model_path)
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         return checkpoint['model_state_dict']

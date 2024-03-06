@@ -133,8 +133,9 @@ class ReDialSystem(BaseSystem):
         logger.info('[Test]')
         logger.info('[Test the best model]')
         checkpoint = self._load_checkpoints(0, 'best')
-        self.rec_model.load_state_dict(checkpoint)
-        test()
+        if checkpoint is not None:
+            self.rec_model.load_state_dict(checkpoint)
+            test()
         logger.info('[Test the last model]')
         checkpoint = self._load_checkpoints(0, 'last')
         self.rec_model.load_state_dict(checkpoint)
@@ -175,8 +176,9 @@ class ReDialSystem(BaseSystem):
         logger.info('[Test]')
         logger.info('[Test the best model]')
         checkpoint = self._load_checkpoints(1, 'best')
-        self.conv_model.load_state_dict(checkpoint)
-        test()
+        if checkpoint is not None:
+            self.conv_model.load_state_dict(checkpoint)
+            test()
         logger.info('[Test the last model]')
         checkpoint = self._load_checkpoints(1, 'last')
         self.conv_model.load_state_dict(checkpoint)
