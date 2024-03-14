@@ -29,7 +29,7 @@ pretrain:
     name: Adam
     lr: !!float 3e-3
 rec:
-  epoch: 20
+  epoch: 50
   batch_size: 1024
   optimizer:
     name: Adam
@@ -38,7 +38,7 @@ rec:
   stop_mode: max
   impatience: 3
 conv:
-  epoch: 10
+  epoch: 100
   batch_size: 256
   optimizer:
     name: Adam
@@ -48,3 +48,6 @@ conv:
     patience: 3
     factor: 0.5
   gradient_clip: 0.1
+  early_stop: true
+  impatience: 3
+  stop_mode: min
