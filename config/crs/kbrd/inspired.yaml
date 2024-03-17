@@ -27,7 +27,7 @@ rec:
   batch_size: 1024
   early_stop: True
   stop_mode: max
-  impatience: 5
+  impatience: 3
   optimizer:
     name: Adam
     lr: !!float 3e-3
@@ -36,7 +36,7 @@ conv:
   batch_size: 64
   early_stop: True
   stop_mode: min
-  impatience: 5
+  impatience: 3
   optimizer:
     name: Adam
     lr: !!float 1e-3
