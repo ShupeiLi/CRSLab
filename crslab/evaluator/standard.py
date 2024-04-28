@@ -40,7 +40,7 @@ class StandardEvaluator(BaseEvaluator):
         # rec
         self.rec_metrics = Metrics()
         # gen
-        self.dist_set = defaultdict(set)
+        self.dist_set = defaultdict(list)
         self.dist_cnt = 0
         self.gen_metrics = Metrics()
         self._load_embedding(language)
@@ -85,7 +85,6 @@ class StandardEvaluator(BaseEvaluator):
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
                 self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
-                hyp_token = gen.normalize_answer(hyp).split()  # NOTE: The original code doesn't split tokens (a bug?).
                 for token in ngrams(hyp, k):
                     self.dist_set[f"inter-dist@{k}"].add(token)
             self.dist_cnt += 1
@@ -98,7 +97,7 @@ class StandardEvaluator(BaseEvaluator):
 
     def report(self, epoch=-1, mode='test'):
         for k, v in self.dist_set.items():
-            self.gen_metrics.add(k, AverageMetric(len(v) / self.dist_cnt))
+            self.gen_metrics.add(k, AverageMetric(len(set(v)) / len(v)))
         reports = [self.rec_metrics.report(), self.gen_metrics.report(), self.optim_metrics.report()]
         if self.tensorboard and mode != 'test':
             for idx, task_report in enumerate(reports):
