@@ -71,7 +71,7 @@ class KBRDSystem(BaseSystem):
             r_str = ind2txt(r, self.ind2tok, self.end_token_idx)
             self.evaluator.gen_evaluate(p_str, [r_str])
 
-    def step(self, batch, stage, mode):
+    def step(self, batch, stage, mode, epoch=-1):
         assert stage in ('rec', 'conv')
         assert mode in ('train', 'valid', 'test')
 
@@ -101,6 +101,58 @@ class KBRDSystem(BaseSystem):
             else:
                 preds = self.model.forward(batch, mode, stage)
                 self.conv_evaluate(preds, batch['response'])
+                response = batch['response']
+                self.record_conv_gt_pred(response, preds, epoch)
+                self.record_conv_gt(response, preds)
+                self.record_conv_pred(response, preds, epoch)
+
+    def record_conv_gt_pred(self, batch_response, batch_pred, epoch):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer(f'{epoch}_record_conv_gt_pred', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            response_tok_list = self.convert_tensor_ids_to_tokens(response)
+            pred_tok_list = self.convert_tensor_ids_to_tokens(pred)
+
+            file_writer.writelines(' '.join(response_tok_list) + '\n')
+            file_writer.writelines(' '.join(pred_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def record_conv_gt(self, batch_response, batch_pred):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer('record_conv_gt', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            response_tok_list = self.convert_tensor_ids_to_tokens(response)
+
+            file_writer.writelines(' '.join(response_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def record_conv_pred(self, batch_response, batch_pred, epoch):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer(f'{epoch}_record_conv_pred', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            pred_tok_list = self.convert_tensor_ids_to_tokens(pred)
+
+            file_writer.writelines(' '.join(pred_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def get_file_writer(self, file_keywords: str, file_type: str):
+        file_name = file_keywords + file_type
+        file_path = os.path.join(self.opt['LOG_PATH'], file_name)
+        if os.path.exists(file_path):
+            file_writer = open(file_path, 'a', encoding='utf-8')
+        else:
+            file_writer = open(file_path, 'w', encoding='utf-8')
+
+        return file_writer
 
     def train_recommender(self):
         self.init_optim(self.rec_optim_opt, self.model.parameters())
