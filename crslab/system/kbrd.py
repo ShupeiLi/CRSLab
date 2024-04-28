@@ -43,6 +43,7 @@ class KBRDSystem(BaseSystem):
                                          restore_system, interact, debug, tensorboard, test_only)
 
         self.ind2tok = vocab['ind2tok']
+        self.unk = vocab['unk']
         self.end_token_idx = vocab['end']
         self.item_ids = side_data['item_entity_ids']
 
@@ -71,7 +72,7 @@ class KBRDSystem(BaseSystem):
             r_str = ind2txt(r, self.ind2tok, self.end_token_idx)
             self.evaluator.gen_evaluate(p_str, [r_str])
 
-    def step(self, batch, stage, mode, epoch=-1):
+    def step(self, batch, stage, mode):
         assert stage in ('rec', 'conv')
         assert mode in ('train', 'valid', 'test')
 
@@ -102,13 +103,13 @@ class KBRDSystem(BaseSystem):
                 preds = self.model.forward(batch, mode, stage)
                 self.conv_evaluate(preds, batch['response'])
                 response = batch['response']
-                self.record_conv_gt_pred(response, preds, epoch)
+                self.record_conv_gt_pred(response, preds)
                 self.record_conv_gt(response, preds)
-                self.record_conv_pred(response, preds, epoch)
+                self.record_conv_pred(response, preds)
 
-    def record_conv_gt_pred(self, batch_response, batch_pred, epoch):
+    def record_conv_gt_pred(self, batch_response, batch_pred):
         # (bs, response_truncate), (bs, response_truncate)
-        file_writer = self.get_file_writer(f'{epoch}_record_conv_gt_pred', '.txt')
+        file_writer = self.get_file_writer(f'record_conv_gt_pred', '.txt')
 
         for response, pred in zip(batch_response, batch_pred):
             response_tok_list = self.convert_tensor_ids_to_tokens(response)
@@ -132,9 +133,9 @@ class KBRDSystem(BaseSystem):
 
         file_writer.close()
 
-    def record_conv_pred(self, batch_response, batch_pred, epoch):
+    def record_conv_pred(self, batch_response, batch_pred):
         # (bs, response_truncate), (bs, response_truncate)
-        file_writer = self.get_file_writer(f'{epoch}_record_conv_pred', '.txt')
+        file_writer = self.get_file_writer(f'record_conv_pred', '.txt')
 
         for response, pred in zip(batch_response, batch_pred):
             pred_tok_list = self.convert_tensor_ids_to_tokens(pred)
@@ -143,6 +144,20 @@ class KBRDSystem(BaseSystem):
             file_writer.writelines('\n')
 
         file_writer.close()
+
+    def convert_tensor_ids_to_tokens(self, token_ids):
+        tokens = []
+
+        token_ids = token_ids.tolist() # List[int]
+        if not token_ids:
+            return tokens
+
+        for token_id in token_ids:
+            if token_id == self.end_token_idx:
+                return tokens
+            tokens.append(self.ind2tok.get(token_id, self.unk))
+
+        return tokens
 
     def get_file_writer(self, file_keywords: str, file_type: str):
         file_name = file_keywords + file_type

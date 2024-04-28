@@ -68,6 +68,7 @@ class Config:
                                                                                              time.localtime())) + ".log"
         # log dir path
         log_file = f"./log"
+        self.opt['LOG_PATH'] = log_file
         if not os.path.exists(log_file):
             os.makedirs(log_file)
         logger.remove()

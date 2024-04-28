@@ -29,7 +29,7 @@ if __name__ == '__main__':
                         help='save trained system')
     parser.add_argument('-rs', '--restore_system', action='store_true',
                         help='restore trained system')
-    parser.add_argument('-d', '--debug', action='store_true', default=True,
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='use valid dataset to debug your system')
     parser.add_argument('-i', '--interact', action='store_true',
                         help='interact with your system instead of training')
