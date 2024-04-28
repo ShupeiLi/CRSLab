@@ -18,18 +18,18 @@ if __name__ == '__main__':
     # parse args
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', type=str,
-                        default='config/crs/kbrd/inspired.yaml', help='config file(yaml) path')
+                        default='config/crs/kbrd/redial.yaml', help='config file(yaml) path')
     parser.add_argument('-g', '--gpu', type=str, default='0',
                         help='specify GPU id(s) to use, we now support multiple GPUs. Defaults to CPU(-1).')
     parser.add_argument('-sd', '--save_data', action='store_true',
                         help='save processed dataset')
     parser.add_argument('-rd', '--restore_data', action='store_true',
                         help='restore processed dataset')
-    parser.add_argument('-ss', '--save_system', action='store_true',
+    parser.add_argument('-ss', '--save_system', action='store_true', default=True,
                         help='save trained system')
     parser.add_argument('-rs', '--restore_system', action='store_true',
                         help='restore trained system')
-    parser.add_argument('-d', '--debug', action='store_true', default=False,
+    parser.add_argument('-d', '--debug', action='store_true', default=True,
                         help='use valid dataset to debug your system')
     parser.add_argument('-i', '--interact', action='store_true',
                         help='interact with your system instead of training')
@@ -42,6 +42,5 @@ if __name__ == '__main__':
 
     from crslab.quick_start import run_crslab
 
-    # TODO: PPL implementation.
     run_crslab(config, args.save_data, args.restore_data, args.save_system, args.restore_system, args.interact,
                args.debug, args.tensorboard, args.test_only)

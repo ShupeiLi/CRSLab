@@ -86,7 +86,7 @@ class StandardEvaluator(BaseEvaluator):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
                 self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
                 for token in ngrams(hyp, k):
-                    self.dist_set[f"inter-dist@{k}"].add(token)
+                    self.dist_set[f"inter-dist@{k}"].append(token)
             self.dist_cnt += 1
 
             hyp_emb = self._get_sent_embedding(hyp)

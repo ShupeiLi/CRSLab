@@ -105,7 +105,6 @@ class BleuMetric(AverageMetric):
         score = sentence_bleu(
             [a.split(" ") for a in answers],
             guess.split(" "),
-            smoothing_function=nltkbleu.SmoothingFunction(epsilon=1e-12).method1,
             weights=weights,
         )
         return BleuMetric(score)
