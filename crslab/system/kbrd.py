@@ -258,6 +258,9 @@ class KBRDSystem(BaseSystem):
 
     def fit(self):
         self.train_recommender()
+        checkpoint = self._load_checkpoints(0, 'best')
+        if checkpoint is not None:
+            self.model.load_state_dict(checkpoint)
         self.train_conversation()
 
     def interact(self):

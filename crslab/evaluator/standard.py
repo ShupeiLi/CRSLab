@@ -85,7 +85,8 @@ class StandardEvaluator(BaseEvaluator):
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
                 self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
-                for token in ngrams(hyp, k):
+                hyp_token = gen.normalize_answer(hyp).split()
+                for token in ngrams(hyp_token, k):
                     self.dist_set[f"inter-dist@{k}"].append(token)
             self.dist_cnt += 1
 

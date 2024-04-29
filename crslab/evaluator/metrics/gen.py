@@ -103,8 +103,9 @@ class BleuMetric(AverageMetric):
         """
         weights = [1 / k for _ in range(k)]
         score = sentence_bleu(
-            [a.split(" ") for a in answers],
-            guess.split(" "),
+            [normalize_answer(a).split(" ") for a in answers],
+            normalize_answer(guess).split(" "),
+            smoothing_function=nltkbleu.SmoothingFunction(epsilon=1e-12).method1,
             weights=weights,
         )
         return BleuMetric(score)
@@ -145,11 +146,10 @@ class IntraDistinctMetric(AverageMetric):
     @staticmethod
     def compute(guess: str, answers: List[str], k: int) -> Optional['IntraDistinctMetric']:
         intra = 0.0
-        for answer in answers:
-            tokens = answer.split()
-            counts = Counter(ngrams(tokens, k))
-            intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
-        return IntraDistinctMetric(intra, len(answers))
+        tokens = normalize_answer(guess).split()
+        counts = Counter(ngrams(tokens, k))
+        intra += max(len(counts), 1e-12) / max(sum(counts.values()), 1e-5)
+        return IntraDistinctMetric(intra, 1.0)
 
 
 # NOTE: Not used. Inter-distinct is implemented separately in evaluator/conv.py.
