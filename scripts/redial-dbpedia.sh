@@ -2,7 +2,7 @@
 # Change n, model
 
 nhop="2"
-model="kbrd"
+model="kgsf"
 save_path="/root/autodl-fs/${model}/redial-dbpedia"
 
 file1="dbpedia_subkg.json"
