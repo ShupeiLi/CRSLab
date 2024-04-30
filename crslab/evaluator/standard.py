@@ -81,11 +81,11 @@ class StandardEvaluator(BaseEvaluator):
             for i in range(3):
                 self.gen_metrics.add(f"rouge-{rouge_keys[i]}", rouge_scores[i])
 
+            hyp_token = hyp.split()
             # NOTE: BLEU-{1, 2, 3, 4}, Inter-distinct-{1, 2, 3, 4}, Intra-distinct-{1, 2, 3, 4}
             for k in range(1, 5):
                 self.gen_metrics.add(f"bleu@{k}", BleuMetric.compute(hyp, refs, k))
                 self.gen_metrics.add(f"intra-dist@{k}", IntraDistinctMetric.compute(hyp, refs, k))
-                hyp_token = gen.normalize_answer(hyp).split()
                 for token in ngrams(hyp_token, k):
                     self.dist_set[f"inter-dist@{k}"].append(token)
             self.dist_cnt += 1

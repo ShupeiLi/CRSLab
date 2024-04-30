@@ -23,19 +23,19 @@ n_positions: 1024
 user_proj_dim: 512
 # optim
 rec:
-  epoch: 100
+  epoch: 50
   batch_size: 4096
   early_stop: true
-  impatience: 3
+  impatience: 5
   stop_mode: min
   optimizer:
     name: Adam
     lr: !!float 3e-3
 conv:
-  epoch: 100
+  epoch: 50
   batch_size: 32
   early_stop: true
-  impatience: 3
+  impatience: 10
   stop_mode: min
   optimizer:
     name: Adam

@@ -25,7 +25,7 @@ if __name__ == '__main__':
                         help='save processed dataset')
     parser.add_argument('-rd', '--restore_data', action='store_true',
                         help='restore processed dataset')
-    parser.add_argument('-ss', '--save_system', action='store_true', default=True,
+    parser.add_argument('-ss', '--save_system', action='store_true', default=False,
                         help='save trained system')
     parser.add_argument('-rs', '--restore_system', action='store_true',
                         help='restore trained system')
