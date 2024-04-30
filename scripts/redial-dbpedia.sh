@@ -1,8 +1,10 @@
 #! /usr/bin
-# Change n
+# Change n, model
 
 nhop="2"
-save_path="/root/autodl-fs/kbrd/redial-dbpedia"
+model="kbrd"
+save_path="/root/autodl-fs/${model}/redial-dbpedia"
+
 file1="dbpedia_subkg.json"
 file2="entity2id.json"
 file3="movie_ids.json"
@@ -19,7 +21,7 @@ cp "${kg_path}/${file2}" "${data_path}"
 cp "${kg_path}/${file3}" "${data_path}"
 
 # run model
-python run_crslab.py --config config/crs/kbrd/redial.yaml
+python run_crslab.py --config "config/crs/${model}/redial.yaml"
 
 # backup
 mkdir -p "${save_path}/${nhop}-hop/"
