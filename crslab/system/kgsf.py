@@ -42,6 +42,7 @@ class KGSFSystem(BaseSystem):
                                          restore_system, interact, debug, tensorboard, test_only)
 
         self.ind2tok = vocab['ind2tok']
+        self.unk = vocab['unk']
         self.end_token_idx = vocab['end']
         self.item_ids = side_data['item_entity_ids']
 
@@ -109,8 +110,75 @@ class KGSFSystem(BaseSystem):
             else:
                 pred = self.model.forward(batch, stage, mode)
                 self.conv_evaluate(pred, batch[-1])
+                response = batch[-1]
+                self.record_conv_gt_pred(response, pred)
+                self.record_conv_gt(response, pred)
+                self.record_conv_pred(response, pred)
         else:
             raise
+
+
+    def record_conv_gt_pred(self, batch_response, batch_pred):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer(f'record_conv_gt_pred', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            response_tok_list = self.convert_tensor_ids_to_tokens(response)
+            pred_tok_list = self.convert_tensor_ids_to_tokens(pred)
+
+            file_writer.writelines(' '.join(response_tok_list) + '\n')
+            file_writer.writelines(' '.join(pred_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def record_conv_gt(self, batch_response, batch_pred):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer('record_conv_gt', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            response_tok_list = self.convert_tensor_ids_to_tokens(response)
+
+            file_writer.writelines(' '.join(response_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def record_conv_pred(self, batch_response, batch_pred):
+        # (bs, response_truncate), (bs, response_truncate)
+        file_writer = self.get_file_writer(f'record_conv_pred', '.txt')
+
+        for response, pred in zip(batch_response, batch_pred):
+            pred_tok_list = self.convert_tensor_ids_to_tokens(pred)
+
+            file_writer.writelines(' '.join(pred_tok_list) + '\n')
+            file_writer.writelines('\n')
+
+        file_writer.close()
+
+    def convert_tensor_ids_to_tokens(self, token_ids):
+        tokens = []
+
+        token_ids = token_ids.tolist() # List[int]
+        if not token_ids:
+            return tokens
+
+        for token_id in token_ids:
+            if token_id == self.end_token_idx:
+                return tokens
+            tokens.append(self.ind2tok.get(token_id, self.unk))
+
+        return tokens
+
+    def get_file_writer(self, file_keywords: str, file_type: str):
+        file_name = file_keywords + file_type
+        file_path = os.path.join(self.opt['LOG_PATH'], file_name)
+        if os.path.exists(file_path):
+            file_writer = open(file_path, 'a', encoding='utf-8')
+        else:
+            file_writer = open(file_path, 'w', encoding='utf-8')
+
+        return file_writer
 
     def pretrain(self):
         self.init_optim(self.pretrain_optim_opt, self.model.parameters())
