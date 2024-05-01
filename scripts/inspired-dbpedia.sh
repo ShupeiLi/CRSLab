@@ -3,7 +3,7 @@
 
 nhop="2"
 nkey="two"
-model="kbrd"
+model="kgsf"
 save_path="/root/autodl-fs/${model}/inspired-dbpedia"
 
 file1="entity2id.json"
