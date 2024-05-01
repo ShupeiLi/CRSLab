@@ -13,9 +13,9 @@ file1_alias="cndbpedia-${nkey}-hop-kg-entity2id.json"
 file2_alias="cndbpedia-${nkey}-hop-kg.txt"
 file3_alias="${nkey}-hop-movie_ids.json"
 
-data_path="`pwd`/data/dataset/tgredial/pkuseg"
-kg_path="`pwd`/ali-kg/cndbpedia/${nhop}-hop"
-tmp_path="`pwd`/data"
+data_path="$(pwd)/data/dataset/tgredial/pkuseg"
+kg_path="$(pwd)/ali-kg/cndbpedia/${nhop}-hop"
+tmp_path="$(pwd)/data"
 
 # move and rename n-hop files
 mv "${data_path}/${file1}" "${tmp_path}"

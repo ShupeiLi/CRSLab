@@ -3,7 +3,7 @@
 
 nhop="2"
 nkey="two"
-model="kbrd"
+model="kgsf"
 save_path="/root/autodl-fs/${model}/inspired-dbpedia"
 
 file1="entity2id.json"
@@ -13,9 +13,9 @@ file1_alias="dbpedia-${nkey}-hop-v1-entity2id.json"
 file2_alias="dbpedia-${nkey}-hop-v1.txt"
 file3_alias="${nkey}-hop-v1-movie_ids.json"
 
-data_path="`pwd`/data/dataset/inspired/nltk"
-kg_path="`pwd`/ali-kg/dbpedia-inspired/${nhop}-hop"
-tmp_path="`pwd`/data"
+data_path="$(pwd)/data/dataset/inspired/nltk"
+kg_path="$(pwd)/ali-kg/dbpedia-inspired/${nhop}-hop"
+tmp_path="$(pwd)/data"
 
 # move and rename n-hop files
 mv "${data_path}/${file1}" "${tmp_path}"
