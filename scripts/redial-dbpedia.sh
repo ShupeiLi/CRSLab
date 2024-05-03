@@ -8,9 +8,9 @@ save_path="/root/autodl-fs/${model}/redial-dbpedia"
 file1="dbpedia_subkg.json"
 file2="entity2id.json"
 file3="movie_ids.json"
-data_path="`pwd`/data/dataset/redial/nltk"
-kg_path="`pwd`/ali-kg/dbpedia-redial/${nhop}-hop"
-tmp_path="`pwd`/data"
+data_path="$(pwd)/data/dataset/redial/nltk"
+kg_path="$(pwd)/ali-kg/dbpedia-redial/${nhop}-hop"
+tmp_path="$(pwd)/data"
 
 # move n-hop files
 mv "${data_path}/${file1}" "${tmp_path}"
