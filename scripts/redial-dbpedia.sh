@@ -1,8 +1,8 @@
 #! /usr/bin
 # Change n, model
 
-nhop="2"
-model="kbrd"
+#nhop="2"
+#model="kbrd"
 save_path="/root/autodl-fs/${model}/redial-dbpedia"
 
 file1="dbpedia_subkg.json"

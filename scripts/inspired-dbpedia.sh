@@ -1,9 +1,9 @@
 #! /usr/bin
 # Change n, key, model
 
-nhop="2"
-nkey="two"
-model="kgsf"
+#nhop="2"
+#nkey="two"
+#model="kbrd"
 save_path="/root/autodl-fs/${model}/inspired-dbpedia"
 
 file1="entity2id.json"
