@@ -1,9 +1,9 @@
 #! /usr/bin
 # Change n, key
 
-nhop="2"
-nkey="two"
-model="kgsf"
+#nhop="2"
+#nkey="two"
+#model="kgsf"
 save_path="/root/autodl-fs/${model}/redial-conceptnet"
 
 file1="conceptnet_subkg.txt"
