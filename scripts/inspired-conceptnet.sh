@@ -1,9 +1,9 @@
 #! /usr/bin
 # Change n, key
 
-nhop="2"
-nkey="two"
-model="kgsf"
+#nhop="2"
+#nkey="two"
+#model="kgsf"
 save_path="/root/autodl-fs/${model}/inspired-conceptnet"
 
 file1="concept_subkg.txt"
